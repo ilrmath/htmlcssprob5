@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML＋CSS 擬似エディタ（動物紹介版）</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: sans-serif; }
+    body { display: flex; height: 100vh; }
+    #preview-area { width: 50%; border-right: 1px solid #ccc; overflow-y: auto; display: flex; flex-direction: column; }
+    #preview-wrapper { flex-grow: 1; display: flex; flex-direction: column; }
+    #preview-label { background-color: #ddd; padding: 8px 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    #preview-label label { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+    #preview { flex-grow: 1; padding: 20px; background-color: #f0f0f0; }
+    .editor-area { width: 50%; display: flex; flex-direction: column; overflow-y: auto; transition: width 0.3s ease; height: 100vh; }
+    .label { background-color: #ddd; padding: 8px 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    .toggle-buttons { display: flex; gap: 12px; }
+    .toggle-buttons label { display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 14px; }
+    .editor-row { display: flex; border-bottom: 1px solid #ccc; transition: height 0.3s ease; flex-grow: 1; }
+    .collapsed { height: 0 !important; overflow: hidden !important; padding: 0 !important; border: none !important; }
+    .example, .input { flex: 1; display: flex; flex-direction: column; }
+    .editor-wrapper { display: flex; flex: 1; overflow: auto; }
+    .line-numbers { background-color: #eee; color: #666; padding: 10px 5px; text-align: right; user-select: none; font-family: monospace; font-size: 15px; line-height: 1.5em; white-space: pre; width: 40px; flex-shrink: 0; }
+    pre { margin: 0; padding: 10px; background-color: #fafafa; font-family: monospace; font-size: 15px; line-height: 1.5em; overflow: auto; white-space: pre; height: 100%; display: block; flex: 1; overflow-x: auto; }
+    textarea { width: 100%; height: 100%; padding: 10px; font-family: monospace; font-size: 15px; border: none; outline: none; resize: none; line-height: 1.5em; overflow: auto; white-space: pre; overflow-x: auto; }
+    .hidden { display: none !important; }
+    .html-css-label { min-height: 2.5em; }
+    .flash { animation: flash-bg 0.3s ease; }
+    @keyframes flash-bg { 0% { background-color: #fff8a5; } 100% { background-color: white; } }
+  </style>
+</head>
+<body>
+<div id="preview-area">
+  <div id="preview-label">
+    <label><input type="checkbox" id="previewToggle" checked onchange="togglePreview()"> 📄 表示</label>
+  </div>
+  <div id="preview-wrapper"><div id="preview"></div></div>
+</div>
+
+<div class="editor-area">
+  <div class="editor-content">
+
+    <!-- HTMLエリア -->
+    <div class="label html-css-label">
+      📝 HTMLエリア
+      <div class="toggle-buttons">
+        <label id="showPreviewFallback" class="hidden"><input type="checkbox" onchange="restorePreview()"> 表示</label>
+        <label><input type="checkbox" onchange="copyExampleToInput('html')"> コピー</label>
+        <label><input type="checkbox" onchange="toggleBlockByCheckbox(this, 'html', 'Example')"> 手本</label>
+        <label><input type="checkbox" checked onchange="toggleBlockByCheckbox(this, 'html', 'InputContainer')"> 入力</label>
+      </div>
+    </div>
+
+    <div class="editor-row" id="htmlRow">
+      <div class="example hidden" id="htmlExample">
+        <div class="editor-wrapper">
+          <div class="line-numbers" id="htmlExampleLines"></div>
+          <pre>&lt;header&gt;&lt;!-- headerは冒頭のかたまり部分のこと --&gt;
+  &lt;h1&gt;動物紹介&lt;/h1&gt;
+  &lt;p&gt;たくさんの可愛い動物を紹介します。
+  &lt;br&gt;どうぞごらんください。&lt;/p&gt;
+&lt;/header&gt;
+
+&lt;nav&gt;&lt;!-- navは冒頭に表示する目次のかたまり.ナビゲーション --&gt;
+  &lt;a href="https://search.yahoo.co.jp/search?p=イヌ"&gt;イヌ&lt;/a&gt;
+  &lt;a href="https://search.yahoo.co.jp/search?p=ネコ"&gt;ネコ&lt;/a&gt;
+&lt;/nav&gt;
+
+&lt;section&gt;
+  &lt;h2&gt;豚小屋&lt;/h2&gt;
+  &lt;p&gt;🍆🐖♪〜🐖〜🐖〜🐖〜🐖〜&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section id="dog"&gt;
+  &lt;h2&gt;犬小屋&lt;/h2&gt;
+  &lt;p&gt;🍖🦮♪〜🐕‍🦺〜わん！〜🐩〜&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section id="cat"&gt;
+  &lt;h2&gt;ねこ小屋&lt;/h2&gt;
+  &lt;p&gt;🍡🐈♪〜🐈‍⬛〜〜&lt;/p&gt;
+&lt;/section&gt;</pre>
+        </div>
+      </div>
+
+      <div class="input" id="htmlInputContainer">
+        <div class="editor-wrapper">
+          <div class="line-numbers" id="htmlLines"></div>
+          <textarea id="htmlInput" placeholder="ここにHTMLを書いてください"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- CSSエリア -->
+    <div class="label html-css-label">
+      🎨 CSSエリア
+      <div class="toggle-buttons">
+        <label><input type="checkbox" onchange="copyExampleToInput('css')"> コピー</label>
+        <label><input type="checkbox" onchange="toggleBlockByCheckbox(this, 'css', 'Example')"> 手本</label>
+        <label><input type="checkbox" checked onchange="toggleBlockByCheckbox(this, 'css', 'InputContainer')"> 入力</label>
+      </div>
+    </div>
+
+    <div class="editor-row" id="cssRow">
+      <div class="example hidden" id="cssExample">
+        <div class="editor-wrapper">
+          <div class="line-numbers" id="cssExampleLines"></div>
+          <pre>h1{
+ color:blue;
+ background-color:yellow;
+ text-align:center;
+}
+
+header{
+ border-style:solid;
+ padding:10px;
+ margin:10px;
+}
+
+h2{
+ text-align:center;
+}
+
+section{
+ border-style:solid;
+ padding:10px;
+ margin:10px;
+ width:300px;  
+}
+
+#dog{
+ color:red;
+}
+
+#cat{
+ color:blue;
+}</pre>
+        </div>
+      </div>
+
+      <div class="input" id="cssInputContainer">
+        <div class="editor-wrapper">
+          <div class="line-numbers" id="cssLines"></div>
+          <textarea id="cssInput" placeholder="ここにCSSを書いてください"></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ▼ 手本コードのコピー機能 ▼
+function copyExampleToInput(type) {
+  const examplePre = document.querySelector(`#${type}Example pre`);
+  const inputArea = document.getElementById(`${type}Input`);
+  const lineBox = document.getElementById(`${type}Lines`);
+  const checkbox = event.target;
+  if (!examplePre || !inputArea) return;
+  inputArea.value = examplePre.textContent;
+  updateLineNumbers(inputArea, lineBox);
+  updatePreview();
+  inputArea.classList.add('flash');
+  setTimeout(() => inputArea.classList.remove('flash'), 300);
+  setTimeout(() => { checkbox.checked = false; }, 100);
+}
+
+// ▼ 入力欄の手本/入力切り替え ▼
+function toggleBlockByCheckbox(checkbox, section, target) {
+  const targetId = section + target;
+  const rowId = section + 'Row';
+  const block = document.getElementById(targetId);
+  if (checkbox.checked) block.classList.remove('hidden');
+  else block.classList.add('hidden');
+  const bothHidden = [
+    document.getElementById(section + 'Example'),
+    document.getElementById(section + 'InputContainer')
+  ].every(el => el.classList.contains('hidden'));
+  document.getElementById(rowId).classList.toggle('collapsed', bothHidden);
+}
+
+// ▼ プレビュー表示の切り替え ▼
+function togglePreview() {
+  const isChecked = document.getElementById('previewToggle').checked;
+  const previewArea = document.getElementById('preview-area');
+  const editorArea = document.querySelector('.editor-area');
+  const fallback = document.getElementById('showPreviewFallback');
+  if (isChecked) {
+    previewArea.classList.remove('hidden');
+    editorArea.style.width = '50%';
+    fallback.classList.add('hidden');
+  } else {
+    previewArea.classList.add('hidden');
+    editorArea.style.width = '100%';
+    fallback.classList.remove('hidden');
+  }
+}
+function restorePreview() {
+  document.getElementById('previewToggle').checked = true;
+  togglePreview();
+}
+
+// ▼ 行番号の更新 ▼
+function updateLineNumbers(textarea, lineBox) {
+  const lines = textarea.value.split('\n').length;
+  lineBox.innerHTML = Array.from({ length: lines }, (_, i) => `${i + 1})`).join('\n');
+}
+function updateExampleLineNumbers(pre, lineBox) {
+  const lines = pre.textContent.split('\n').length;
+  lineBox.innerHTML = Array.from({ length: lines }, (_, i) => `${i + 1})`).join('\n');
+}
+
+// ▼ プレビュー更新 ▼
+function updatePreview() {
+  const html = htmlInput.value.trim();
+  const css = `<style>${cssInput.value}</style>`;
+  preview.innerHTML = html ? css + html : "";
+  preview.querySelectorAll('a').forEach(a => a.setAttribute('target', '_blank'));
+}
+
+// ▼ 入力欄の監視イベント登録 ▼
+const htmlInput = document.getElementById('htmlInput');
+const cssInput = document.getElementById('cssInput');
+const htmlLines = document.getElementById('htmlLines');
+const cssLines = document.getElementById('cssLines');
+const preview = document.getElementById('preview');
+
+htmlInput.addEventListener('input', () => { updatePreview(); updateLineNumbers(htmlInput, htmlLines); });
+cssInput.addEventListener('input', () => { updatePreview(); updateLineNumbers(cssInput, cssLines); });
+
+// ▼ 初回起動処理 ▼
+window.addEventListener('load', () => {
+  updatePreview();
+  updateLineNumbers(htmlInput, htmlLines);
+  updateLineNumbers(cssInput, cssLines);
+  updateExampleLineNumbers(document.querySelector('#htmlExample pre'), document.getElementById('htmlExampleLines'));
+  updateExampleLineNumbers(document.querySelector('#cssExample pre'), document.getElementById('cssExampleLines'));
+});
+</script>
+
+</body>
+</html>
