@@ -2,67 +2,538 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>HTML＋CSS 擬似エディタ（動物紹介版）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML＋CSS 擬似エディタ（動物紹介 練習問題）</title>
   <style>
+    :root {
+      --green: #18a77b;
+      --green-dark: #08745d;
+      --green-deep: #075847;
+      --green-soft: #eafaf4;
+      --green-pale: #f7fffb;
+      --neon-yellow: #efff00;
+      --neon-yellow-soft: #fbffad;
+      --ink: #263a34;
+      --muted: #667b74;
+      --line: #bfe4d7;
+      --shadow: 0 16px 38px rgba(8, 116, 93, 0.23), 0 0 0 1px rgba(239, 255, 0, 0.58);
+    }
+
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: sans-serif; }
-    body { display: flex; height: 100vh; }
-    #preview-area { width: 50%; border-right: 1px solid #ccc; overflow-y: auto; display: flex; flex-direction: column; }
-    #preview-wrapper { flex-grow: 1; display: flex; flex-direction: column; }
-    #preview-label { background-color: #ddd; padding: 8px 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-    #preview-label label { display: flex; align-items: center; gap: 6px; font-size: 14px; }
-    #preview { flex-grow: 1; padding: 20px; background-color: #f0f0f0; }
-    .editor-area { width: 50%; display: flex; flex-direction: column; overflow-y: auto; transition: width 0.3s ease; height: 100vh; }
-    .label { background-color: #ddd; padding: 8px 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-    .toggle-buttons { display: flex; gap: 12px; }
-    .toggle-buttons label { display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 14px; }
-    .editor-row { display: flex; border-bottom: 1px solid #ccc; transition: height 0.3s ease; flex-grow: 1; }
-    .collapsed { height: 0 !important; overflow: hidden !important; padding: 0 !important; border: none !important; }
-    .example, .input { flex: 1; display: flex; flex-direction: column; }
-    .editor-wrapper { display: flex; flex: 1; overflow: auto; }
-    .line-numbers { background-color: #eee; color: #666; padding: 10px 5px; text-align: right; user-select: none; font-family: monospace; font-size: 15px; line-height: 1.5em; white-space: pre; width: 40px; flex-shrink: 0; }
-    pre { margin: 0; padding: 10px; background-color: #fafafa; font-family: monospace; font-size: 15px; line-height: 1.5em; overflow: auto; white-space: pre; height: 100%; display: block; flex: 1; overflow-x: auto; }
-    textarea { width: 100%; height: 100%; padding: 10px; font-family: monospace; font-size: 15px; border: none; outline: none; resize: none; line-height: 1.5em; overflow: auto; white-space: pre; overflow-x: auto; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: "Helvetica Neue", "Yu Gothic", "Meiryo", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--green-pale);
+    }
+
+    body {
+      display: flex;
+      min-width: 860px;
+      background:
+        radial-gradient(circle at 10% 8%, rgba(239, 255, 0, 0.13), transparent 22%),
+        linear-gradient(135deg, #f7fffb 0%, #fff 52%, #f2fff9 100%);
+    }
+
+    #preview-area {
+      width: 50%;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-right: 3px solid var(--neon-yellow);
+      background: #fff;
+      transition: width 0.3s ease, opacity 0.25s ease;
+    }
+
+    #preview-wrapper {
+      min-height: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+    }
+
+    #preview-label, .label {
+      min-height: 48px;
+      padding: 9px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, var(--green-dark), var(--green) 65%, #47c99f);
+      border-bottom: 4px solid var(--neon-yellow);
+      box-shadow: 0 3px 0 rgba(8, 116, 93, 0.08);
+    }
+
+    #preview-label label, .toggle-buttons label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #preview-label label {
+      padding: 5px 10px;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.17);
+      font-size: 14px;
+    }
+
+    #preview {
+      flex: 1;
+      min-height: 100%;
+      padding: 24px;
+      background:
+        linear-gradient(rgba(24, 167, 123, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(24, 167, 123, 0.04) 1px, transparent 1px),
+        #fff;
+      background-size: 24px 24px;
+    }
+
+    .editor-area {
+      width: 50%;
+      height: 100vh;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: width 0.3s ease;
+      background: #fff;
+    }
+
+    .editor-content {
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .html-css-label { min-height: 48px; }
+
+    .toggle-buttons {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: nowrap;
+    }
+
+    .toggle-buttons label {
+      padding: 5px 8px;
+      border: 1px solid rgba(255,255,255,0.38);
+      border-radius: 7px;
+      background: rgba(255,255,255,0.16);
+      font-size: 13px;
+      font-weight: 700;
+      transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    }
+
+    .toggle-buttons label:hover {
+      color: var(--green-deep);
+      background: var(--neon-yellow);
+      transform: translateY(-1px);
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--neon-yellow);
+      cursor: pointer;
+    }
+
+    .editor-row {
+      min-height: 0;
+      flex: 1 1 0;
+      display: flex;
+      overflow: hidden;
+      border-bottom: 3px solid var(--neon-yellow);
+      background: #fff;
+      transition: flex-basis 0.3s ease, height 0.3s ease;
+    }
+
+    .editor-row:last-of-type { border-bottom: none; }
+
+    .collapsed {
+      flex: 0 0 0 !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+      padding: 0 !important;
+      border: none !important;
+    }
+
+    .example, .input {
+      min-width: 0;
+      min-height: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .example + .input, .input + .example { border-left: 2px solid var(--line); }
+
+    .editor-wrapper {
+      min-width: 0;
+      min-height: 0;
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .line-numbers {
+      width: 44px;
+      flex-shrink: 0;
+      padding: 12px 7px 12px 4px;
+      overflow: hidden;
+      user-select: none;
+      text-align: right;
+      white-space: pre;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.55em;
+      font-weight: 700;
+      color: var(--green-dark);
+      background: linear-gradient(180deg, var(--neon-yellow-soft), #f9ffd4);
+      border-right: 2px solid var(--neon-yellow);
+    }
+
+    pre, textarea {
+      min-width: 0;
+      min-height: 0;
+      flex: 1;
+      margin: 0;
+      padding: 12px;
+      overflow: auto;
+      white-space: pre;
+      tab-size: 2;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.55em;
+      color: #30443d;
+    }
+
+    pre { background: var(--green-soft); border: none; }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      outline: none;
+      border: none;
+      background: #fff;
+      caret-color: var(--green);
+      transition: box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    textarea:focus {
+      background: #fefffe;
+      box-shadow: inset 0 0 0 3px rgba(24, 167, 123, 0.17);
+    }
+
     .hidden { display: none !important; }
-    .html-css-label { min-height: 2.5em; }
-    .flash { animation: flash-bg 0.3s ease; }
-    @keyframes flash-bg { 0% { background-color: #fff8a5; } 100% { background-color: white; } }
+    .flash { animation: flash-bg 0.45s ease; }
+    @keyframes flash-bg { 0% { background: var(--neon-yellow); } 100% { background: #fff; } }
+
+    #floatingTask {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: min(440px, calc(100vw - 48px));
+      max-height: min(70vh, 650px);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 3px solid var(--neon-yellow);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.97);
+      box-shadow: var(--shadow), 0 0 24px rgba(239,255,0,0.3);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: width 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    #floatingTask.dragging {
+      box-shadow: 0 24px 52px rgba(8,116,93,0.34), 0 0 30px rgba(239,255,0,0.54);
+    }
+
+    #floatingTask.minimized { width: 210px; max-height: none; }
+
+    .task-header {
+      min-height: 50px;
+      padding: 9px 10px 9px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      color: #fff;
+      background: linear-gradient(135deg, var(--green-dark), var(--green));
+      border-bottom: 4px solid var(--neon-yellow);
+    }
+
+    .task-header:active { cursor: grabbing; }
+
+    .task-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    .task-title::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--neon-yellow);
+      box-shadow: 0 0 11px var(--neon-yellow);
+    }
+
+    .task-controls { display: flex; align-items: center; gap: 6px; }
+
+    .task-control {
+      width: 31px;
+      height: 31px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: 2px solid rgba(255,255,255,0.8);
+      border-radius: 9px;
+      color: var(--green-deep);
+      background: var(--neon-yellow);
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(239,255,0,0.55);
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .task-control:hover { transform: translateY(-1px) scale(1.04); background: #fff; }
+
+    .task-body {
+      padding: 12px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-color: var(--green) var(--green-soft);
+      background: linear-gradient(180deg, rgba(24,167,123,0.06), transparent 90px), #fff;
+    }
+
+    #floatingTask.minimized .task-body { display: none; }
+
+    .task-intro {
+      margin: 0 0 10px;
+      padding: 8px 10px;
+      border-left: 5px solid var(--neon-yellow);
+      border-radius: 7px;
+      color: var(--muted);
+      background: var(--green-soft);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .task-item {
+      display: block;
+      margin: 0 0 9px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      box-shadow: 0 3px 10px rgba(8,116,93,0.06);
+      cursor: pointer;
+      transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+    }
+
+    .task-item:last-child { margin-bottom: 0; }
+    .task-item:hover { border-color: var(--green); background: var(--green-pale); transform: translateY(-1px); }
+
+    .task-item-main {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 8px;
+      align-items: start;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .task-mini-list {
+      display: block;
+      width: auto;
+      min-width: 0;
+      margin: 8px 0 0 26px;
+      padding: 9px 11px;
+      overflow: hidden;
+      border: 2px solid var(--neon-yellow);
+      border-radius: 11px;
+      background: #fffef2;
+    }
+
+    .task-line {
+      display: grid;
+      grid-template-columns: 32px minmax(0,1fr);
+      gap: 8px;
+      align-items: start;
+      margin: 0;
+      color: #384942;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.65;
+    }
+
+    .task-line + .task-line { margin-top: 2px; }
+    .task-line .num { color: var(--green); font-weight: 900; }
+    .task-line .code-text { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+    .task-line.red .code-text { color: #e53935; }
+
+    .comment {
+      display: none;
+      margin: 9px 0 0 26px;
+      padding: 8px 10px;
+      border-left: 4px solid var(--green);
+      border-radius: 7px;
+      color: var(--green-deep);
+      background: var(--green-soft);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.55;
+    }
+
+    .task-item.completed {
+      border-color: var(--neon-yellow);
+      background: linear-gradient(135deg, #fff 0%, #fbffd7 100%);
+    }
+    .task-item.completed .comment { display: block; }
+
+    /* ローカルファイルでYouTubeがエラー153になる場合の代替表示 */
+    .youtube-local-link {
+      position: relative;
+      width: min(480px, 92%);
+      aspect-ratio: 16 / 9;
+      margin: 12px auto;
+      display: block;
+      overflow: hidden;
+      border: 3px solid #fff;
+      border-radius: 14px;
+      background: #151515;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+      text-decoration: none;
+    }
+
+    .youtube-local-link img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      opacity: 0.72;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .youtube-local-link:hover img {
+      transform: scale(1.035);
+      opacity: 0.88;
+    }
+
+    .youtube-local-message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 18px;
+      color: #fff;
+      text-align: center;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+    }
+
+    .youtube-local-message strong {
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: #ff0033;
+      font-size: 18px;
+      line-height: 1.2;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    .youtube-local-message small {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .youtube-local-empty {
+      cursor: default;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(239, 255, 0, 0.18), transparent 28%),
+        linear-gradient(135deg, #123f34, #071f19);
+    }
+
+    .youtube-local-empty .youtube-local-message strong {
+      color: var(--neon-yellow);
+      background: rgba(0, 0, 0, 0.38);
+    }
+
+    @media (max-height: 700px) {
+      #floatingTask { right: 14px; bottom: 14px; max-height: 62vh; }
+      #preview-label, .label { min-height: 43px; padding-top: 7px; padding-bottom: 7px; }
+    }
   </style>
-</head>
+<script type="text/javascript" nonce="352a09d0baa4412e8fd1f1e4b42" src="//local.adguard.org?ts=1782267012206&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_000000009f6471fda891dad185c0b44c%26ts%3D495074%26p%3Dfs%26cid%3D1%26sig%3Db0d12b87e412d3b6c9bfba7209c6786ce24f860b1ecfd66cbb0525b7432644fc%26v%3D0&amp;app=com.microsoft.edgemac&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-push&amp;st-loc&amp;st-java&amp;st-dnt"></script><script type="text/javascript" nonce="352a09d0baa4412e8fd1f1e4b42" src="//local.adguard.org?ts=1782267012206&amp;name=AdGuard%20Extra&amp;type=user-script"></script></head>
 <body>
-<div id="preview-area">
-  <div id="preview-label">
-    <label><input type="checkbox" id="previewToggle" checked onchange="togglePreview()"> 📄 表示</label>
-  </div>
-  <div id="preview-wrapper"><div id="preview"></div></div>
-</div>
-
-<div class="editor-area">
-  <div class="editor-content">
-
-    <!-- HTMLエリア -->
-    <div class="label html-css-label">
-      📝 HTMLエリア
-      <div class="toggle-buttons">
-        <label id="showPreviewFallback" class="hidden"><input type="checkbox" onchange="restorePreview()"> 表示</label>
-        <label><input type="checkbox" onchange="copyExampleToInput('html')"> コピー</label>
-        <label><input type="checkbox" onchange="toggleBlockByCheckbox(this, 'html', 'Example')"> 手本</label>
-        <label><input type="checkbox" checked onchange="toggleBlockByCheckbox(this, 'html', 'InputContainer')"> 入力</label>
-      </div>
+  <section id="preview-area" aria-label="プレビュー領域">
+    <div id="preview-label">
+      <span>👀 プレビュー</span>
+      <label><input type="checkbox" id="previewToggle" checked onchange="togglePreview()"> 表示</label>
     </div>
+    <div id="preview-wrapper"><div id="preview"></div></div>
+  </section>
 
-    <div class="editor-row" id="htmlRow">
-      <div class="example hidden" id="htmlExample">
-        <div class="editor-wrapper">
-          <div class="line-numbers" id="htmlExampleLines"></div>
-          <pre>&lt;header&gt;&lt;!-- headerは冒頭のかたまり部分のこと --&gt;
+  <main class="editor-area">
+    <div class="editor-content">
+      <div class="label html-css-label">
+        <span>📝 HTMLエリア</span>
+        <div class="toggle-buttons">
+          <label id="showPreviewFallback" class="hidden"><input type="checkbox" onchange="restorePreview(this)"> 表示</label>
+          <label><input type="checkbox" onchange="copyExampleToInput('html', this)"> コピー</label>
+          <label><input type="checkbox" onchange="toggleBlockByCheckbox(this, 'html', 'Example')"> 手本</label>
+          <label><input type="checkbox" checked onchange="toggleBlockByCheckbox(this, 'html', 'InputContainer')"> 入力</label>
+        </div>
+      </div>
+
+      <div class="editor-row" id="htmlRow">
+        <div class="example hidden" id="htmlExample">
+          <div class="editor-wrapper">
+            <div class="line-numbers" id="htmlExampleLines"></div>
+            <pre>&lt;header&gt;
   &lt;h1&gt;動物紹介&lt;/h1&gt;
-  &lt;p&gt;たくさんの可愛い動物を紹介します。
-  &lt;br&gt;どうぞごらんください。&lt;/p&gt;
+  &lt;p&gt;たくさんの可愛い動物を紹介します。&lt;br&gt;
+  どうぞごらんください。&lt;/p&gt;
   &lt;iframe width="300" height="200" src="https://www.youtube.com/embed/CKIPz9QOBSA" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;
 &lt;/header&gt;
 
-&lt;nav&gt;&lt;!-- navは冒頭に表示する目次のかたまり.ナビゲーション --&gt;
+&lt;nav&gt;
   &lt;a href="https://search.yahoo.co.jp/search?p=イヌ"&gt;イヌ&lt;/a&gt;
   &lt;a href="https://search.yahoo.co.jp/search?p=ネコ"&gt;ネコ&lt;/a&gt;
 &lt;/nav&gt;
@@ -81,163 +552,387 @@
   &lt;h2&gt;ねこ小屋&lt;/h2&gt;
   &lt;p&gt;🍡🐈♪〜🐈‍⬛〜〜&lt;/p&gt;
 &lt;/section&gt;</pre>
+          </div>
+        </div>
+        <div class="input" id="htmlInputContainer">
+          <div class="editor-wrapper">
+            <div class="line-numbers" id="htmlLines"></div>
+            <textarea id="htmlInput" spellcheck="false" placeholder="ここにHTMLを書いてください">&lt;header&gt;
+  &lt;h1&gt;動物紹介&lt;/h1&gt;
+  &lt;p&gt;たくさんの可愛い動物を紹介します。
+  どうぞごらんください。&lt;/p&gt;
+  &lt;iframe width="300" height="200" src="https://www.youtube.com/embed/〇〇" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;
+&lt;/header&gt;
+
+&lt;nav&gt;
+  &lt;a href="https://search.yahoo.co.jp/search?p=イヌ"&gt;イヌ&lt;/a&gt;
+  &lt;a href="https://search.yahoo.co.jp/search?p=ネコ"&gt;ネコ&lt;/a&gt;
+&lt;/nav&gt;
+
+&lt;section&gt;
+  &lt;h2&gt;豚小屋&lt;/h2&gt;
+  &lt;p&gt;🍆🐖♪〜🐖〜🐖〜🐖〜🐖〜&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+  &lt;h2&gt;犬小屋&lt;/h2&gt;
+  &lt;p&gt;🍖🦮♪〜🐕‍🦺〜わん！〜🐩〜&lt;/p&gt;
+&lt;/section&gt;
+
+&lt;section&gt;
+  &lt;h2&gt;ねこ小屋&lt;/h2&gt;
+  &lt;p&gt;🍡🐈♪〜🐈‍⬛〜〜&lt;/p&gt;
+&lt;/section&gt;</textarea>
+          </div>
         </div>
       </div>
 
-      <div class="input" id="htmlInputContainer">
-        <div class="editor-wrapper">
-          <div class="line-numbers" id="htmlLines"></div>
-          <textarea id="htmlInput" placeholder="ここにHTMLを書いてください"></textarea>
+      <div class="label html-css-label">
+        <span>🎨 CSSエリア</span>
+        <div class="toggle-buttons">
+          <label><input type="checkbox" onchange="copyExampleToInput('css', this)"> コピー</label>
+          <label><input type="checkbox" onchange="toggleBlockByCheckbox(this, 'css', 'Example')"> 手本</label>
+          <label><input type="checkbox" checked onchange="toggleBlockByCheckbox(this, 'css', 'InputContainer')"> 入力</label>
         </div>
       </div>
-    </div>
 
-    <!-- CSSエリア -->
-    <div class="label html-css-label">
-      🎨 CSSエリア
-      <div class="toggle-buttons">
-        <label><input type="checkbox" onchange="copyExampleToInput('css')"> コピー</label>
-        <label><input type="checkbox" onchange="toggleBlockByCheckbox(this, 'css', 'Example')"> 手本</label>
-        <label><input type="checkbox" checked onchange="toggleBlockByCheckbox(this, 'css', 'InputContainer')"> 入力</label>
-      </div>
-    </div>
-
-    <div class="editor-row" id="cssRow">
-      <div class="example hidden" id="cssExample">
-        <div class="editor-wrapper">
-          <div class="line-numbers" id="cssExampleLines"></div>
-          <pre>h1{
- color:blue;
- background-color:yellow;
- text-align:center;
+      <div class="editor-row" id="cssRow">
+        <div class="example hidden" id="cssExample">
+          <div class="editor-wrapper">
+            <div class="line-numbers" id="cssExampleLines"></div>
+            <pre>h1 {
+  color: blue;
+  background-color: yellow;
+  text-align: center;
 }
 
-header{
- border-style:solid;
- padding:10px;
- margin:10px;
+header {
+  border-style: solid;
+  padding: 10px;
+  margin: 10px;
 }
 
-h2{
- text-align:center;
+h2 {
+  text-align: center;
 }
 
-section{
- border-style:solid;
- padding:10px;
- margin:10px;
- width:300px;  
+section {
+  border-style: solid;
+  padding: 10px;
+  margin: 10px;
+  width: 300px;
 }
 
-#dog{
- color:red;
+#dog {
+  color: red;
 }
 
-#cat{
- color:blue;
+#cat {
+  color: blue;
 }</pre>
+          </div>
         </div>
-      </div>
+        <div class="input" id="cssInputContainer">
+          <div class="editor-wrapper">
+            <div class="line-numbers" id="cssLines"></div>
+            <textarea id="cssInput" spellcheck="false" placeholder="ここにCSSを書いてください">h1 {
+  color:
+  background-color:
+  text-align:
+}
 
-      <div class="input" id="cssInputContainer">
-        <div class="editor-wrapper">
-          <div class="line-numbers" id="cssLines"></div>
-          <textarea id="cssInput" placeholder="ここにCSSを書いてください"></textarea>
+header {
+  border-style:
+  padding:
+  margin:
+}
+
+h2 {
+  text-align:
+}
+
+section {
+  border-style: solid;
+  padding: 10px;
+  margin: 10px;
+  width: 300px;
+}
+
+#dog {
+  color:
+}
+
+#cat {
+  color:
+}</textarea>
+          </div>
         </div>
       </div>
     </div>
+  </main>
 
-  </div>
-</div>
+  <aside id="floatingTask" aria-label="タスク一覧">
+    <div class="task-header" id="taskDragHandle">
+      <div class="task-title">💡 練習問題</div>
+      <div class="task-controls">
+        <button type="button" class="task-control" id="taskMinimize" aria-label="課題欄を最小化" title="最小化">−</button>
+      </div>
+    </div>
+    <div class="task-body">
+      <p class="task-intro">赤字のとおりに入力・変更します。上から順に進めます。</p>
 
-<script>
-// ▼ 手本コードのコピー機能 ▼
-function copyExampleToInput(type) {
-  const examplePre = document.querySelector(`#${type}Example pre`);
-  const inputArea = document.getElementById(`${type}Input`);
-  const lineBox = document.getElementById(`${type}Lines`);
-  const checkbox = event.target;
-  if (!examplePre || !inputArea) return;
-  inputArea.value = examplePre.textContent;
-  updateLineNumbers(inputArea, lineBox);
-  updatePreview();
-  inputArea.classList.add('flash');
-  setTimeout(() => inputArea.classList.remove('flash'), 300);
-  setTimeout(() => { checkbox.checked = false; }, 100);
-}
+      <label class="task-item">
+        <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>① HTMLエリアの <strong>5)</strong> にある <strong>〇〇</strong> を、<br><code>CKIPz9QOBSA</code><br>（シー・ケー・アイ・ピー・ゼット・ナイン・キュー・オー・ビー・エス・エー）に書き換える</span></span>
+        <span class="task-mini-list">
+          <span class="task-line red"><span class="num">5)</span><span class="code-text">&lt;iframe width="300" height="200" src="https://www.youtube.com/embed/CKIPz9QOBSA" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;</span></span>
+        </span>
+        <span class="comment">動画が表示されました。<strong>O</strong> は数字の <strong>0</strong> ではなく、アルファベットの <strong>O（オー）</strong> です。embed/ の後ろにある文字列が動画IDです。</span>
+      </label>
 
-// ▼ 入力欄の手本/入力切り替え ▼
-function toggleBlockByCheckbox(checkbox, section, target) {
-  const targetId = section + target;
-  const rowId = section + 'Row';
-  const block = document.getElementById(targetId);
-  if (checkbox.checked) block.classList.remove('hidden');
-  else block.classList.add('hidden');
-  const bothHidden = [
-    document.getElementById(section + 'Example'),
-    document.getElementById(section + 'InputContainer')
-  ].every(el => el.classList.contains('hidden'));
-  document.getElementById(rowId).classList.toggle('collapsed', bothHidden);
-}
+      <label class="task-item">
+        <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>② HTMLエリアの <strong>3)</strong> を変更</span></span>
+        <span class="task-mini-list"><span class="task-line red"><span class="num">3)</span><span class="code-text">&lt;p&gt;たくさんの可愛い動物を紹介します。&lt;br&gt;</span></span></span>
+        <span class="comment">&lt;br&gt;を入れた位置で、画面上の文章が改行されます。</span>
+      </label>
 
-// ▼ プレビュー表示の切り替え ▼
-function togglePreview() {
-  const isChecked = document.getElementById('previewToggle').checked;
-  const previewArea = document.getElementById('preview-area');
-  const editorArea = document.querySelector('.editor-area');
-  const fallback = document.getElementById('showPreviewFallback');
-  if (isChecked) {
-    previewArea.classList.remove('hidden');
-    editorArea.style.width = '50%';
-    fallback.classList.add('hidden');
-  } else {
-    previewArea.classList.add('hidden');
-    editorArea.style.width = '100%';
-    fallback.classList.remove('hidden');
-  }
-}
-function restorePreview() {
-  document.getElementById('previewToggle').checked = true;
-  togglePreview();
-}
+      <label class="task-item">
+        <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>③ HTMLエリアの <strong>18)</strong> を変更</span></span>
+        <span class="task-mini-list"><span class="task-line red"><span class="num">18)</span><span class="code-text">&lt;section id="dog"&gt;</span></span></span>
+        <span class="comment">犬小屋のsectionに、dogという名前を付けます。</span>
+      </label>
 
-// ▼ 行番号の更新 ▼
-function updateLineNumbers(textarea, lineBox) {
-  const lines = textarea.value.split('\n').length;
-  lineBox.innerHTML = Array.from({ length: lines }, (_, i) => `${i + 1})`).join('\n');
-}
-function updateExampleLineNumbers(pre, lineBox) {
-  const lines = pre.textContent.split('\n').length;
-  lineBox.innerHTML = Array.from({ length: lines }, (_, i) => `${i + 1})`).join('\n');
-}
+      <label class="task-item">
+        <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>④ HTMLエリアの <strong>23)</strong> を変更</span></span>
+        <span class="task-mini-list"><span class="task-line red"><span class="num">23)</span><span class="code-text">&lt;section id="cat"&gt;</span></span></span>
+        <span class="comment">ねこ小屋のsectionに、catという名前を付けます。</span>
+      </label>
 
-// ▼ プレビュー更新 ▼
-function updatePreview() {
-  const html = htmlInput.value.trim();
-  const css = `<style>${cssInput.value}</style>`;
-  preview.innerHTML = html ? css + html : "";
-  preview.querySelectorAll('a').forEach(a => a.setAttribute('target', '_blank'));
-}
+      <label class="task-item">
+        <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>⑤ CSSエリアの <strong>2)〜4)</strong> を入力</span></span>
+        <span class="task-mini-list">
+          <span class="task-line red"><span class="num">2)</span><span class="code-text">color: blue;</span></span>
+          <span class="task-line red"><span class="num">3)</span><span class="code-text">background-color: yellow;</span></span>
+          <span class="task-line red"><span class="num">4)</span><span class="code-text">text-align: center;</span></span>
+        </span>
+        <span class="comment">大見出しの文字色・背景色・配置をまとめて指定します。</span>
+      </label>
 
-// ▼ 入力欄の監視イベント登録 ▼
-const htmlInput = document.getElementById('htmlInput');
-const cssInput = document.getElementById('cssInput');
-const htmlLines = document.getElementById('htmlLines');
-const cssLines = document.getElementById('cssLines');
-const preview = document.getElementById('preview');
+      <label class="task-item">
+        <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>⑥ CSSエリアの <strong>8)〜10)</strong> を入力</span></span>
+        <span class="task-mini-list">
+          <span class="task-line red"><span class="num">8)</span><span class="code-text">border-style: solid;</span></span>
+          <span class="task-line red"><span class="num">9)</span><span class="code-text">padding: 10px;</span></span>
+          <span class="task-line red"><span class="num">10)</span><span class="code-text">margin: 10px;</span></span>
+        </span>
+        <span class="comment">headerに境界線を付け、内側と外側に空白を作ります。</span>
+      </label>
 
-htmlInput.addEventListener('input', () => { updatePreview(); updateLineNumbers(htmlInput, htmlLines); });
-cssInput.addEventListener('input', () => { updatePreview(); updateLineNumbers(cssInput, cssLines); });
+      <label class="task-item">
+        <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>⑦ CSSエリアの <strong>14)</strong> を入力</span></span>
+        <span class="task-mini-list"><span class="task-line red"><span class="num">14)</span><span class="code-text">text-align: center;</span></span></span>
+        <span class="comment">すべてのh2を中央寄せにします。</span>
+      </label>
 
-// ▼ 初回起動処理 ▼
-window.addEventListener('load', () => {
-  updatePreview();
-  updateLineNumbers(htmlInput, htmlLines);
-  updateLineNumbers(cssInput, cssLines);
-  updateExampleLineNumbers(document.querySelector('#htmlExample pre'), document.getElementById('htmlExampleLines'));
-  updateExampleLineNumbers(document.querySelector('#cssExample pre'), document.getElementById('cssExampleLines'));
-});
-</script>
+      <label class="task-item">
+        <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>⑧ CSSエリアの <strong>25)</strong> と <strong>29)</strong> を入力</span></span>
+        <span class="task-mini-list">
+          <span class="task-line red"><span class="num">25)</span><span class="code-text">color: red;</span></span>
+          <span class="task-line red"><span class="num">29)</span><span class="code-text">color: blue;</span></span>
+        </span>
+        <span class="comment">#dogは犬小屋だけ、#catはねこ小屋だけに適用されます。</span>
+      </label>
+    </div>
+  </aside>
 
+  <script>
+    const htmlInput = document.getElementById('htmlInput');
+    const cssInput = document.getElementById('cssInput');
+    const htmlLines = document.getElementById('htmlLines');
+    const cssLines = document.getElementById('cssLines');
+    const preview = document.getElementById('preview');
+
+    function copyExampleToInput(type, checkbox) {
+      const examplePre = document.querySelector(`#${type}Example pre`);
+      const inputArea = document.getElementById(`${type}Input`);
+      const lineBox = document.getElementById(`${type}Lines`);
+      if (!examplePre || !inputArea) return;
+      inputArea.value = examplePre.textContent;
+      updateLineNumbers(inputArea, lineBox);
+      updatePreview();
+      inputArea.classList.add('flash');
+      setTimeout(() => inputArea.classList.remove('flash'), 450);
+      setTimeout(() => { checkbox.checked = false; }, 120);
+    }
+
+    function toggleBlockByCheckbox(checkbox, section, target) {
+      const block = document.getElementById(section + target);
+      const row = document.getElementById(section + 'Row');
+      if (!block || !row) return;
+      block.classList.toggle('hidden', !checkbox.checked);
+      const bothHidden = [
+        document.getElementById(section + 'Example'),
+        document.getElementById(section + 'InputContainer')
+      ].every(element => element.classList.contains('hidden'));
+      row.classList.toggle('collapsed', bothHidden);
+    }
+
+    function togglePreview() {
+      const isChecked = document.getElementById('previewToggle').checked;
+      const previewArea = document.getElementById('preview-area');
+      const editorArea = document.querySelector('.editor-area');
+      const fallback = document.getElementById('showPreviewFallback');
+      previewArea.classList.toggle('hidden', !isChecked);
+      editorArea.style.width = isChecked ? '50%' : '100%';
+      fallback.classList.toggle('hidden', isChecked);
+    }
+
+    function restorePreview(checkbox) {
+      document.getElementById('previewToggle').checked = true;
+      togglePreview();
+      setTimeout(() => { checkbox.checked = false; }, 120);
+    }
+
+    function updateLineNumbers(textarea, lineBox) {
+      const lines = textarea.value.split('\n').length;
+      lineBox.textContent = Array.from({ length: lines }, (_, index) => `${index + 1})`).join('\n');
+      lineBox.scrollTop = textarea.scrollTop;
+    }
+
+    function updateExampleLineNumbers(pre, lineBox) {
+      const lines = pre.textContent.split('\n').length;
+      lineBox.textContent = Array.from({ length: lines }, (_, index) => `${index + 1})`).join('\n');
+    }
+
+    function processYouTubeEmbeds() {
+      preview.querySelectorAll(
+        'iframe[src*="youtube.com/embed/"], iframe[src*="youtube-nocookie.com/embed/"]'
+      ).forEach(frame => {
+        const src = frame.getAttribute('src') || '';
+        const match = src.match(/\/embed\/([A-Za-z0-9_-]{11})(?:[?/#]|$)/);
+
+        if (!match) {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'youtube-local-link youtube-local-empty';
+          placeholder.innerHTML = `
+            <span class="youtube-local-message">
+              <strong>動画IDを入力してください</strong>
+              <small>HTMLエリア 5) の「〇〇」を CKIPz9QOBSA に書き換えます</small>
+            </span>`;
+          frame.replaceWith(placeholder);
+          return;
+        }
+
+        if (window.location.protocol !== 'file:') return;
+
+        const videoId = match[1];
+        const link = document.createElement('a');
+        link.className = 'youtube-local-link';
+        link.href = `https://www.youtube.com/watch?v=${videoId}`;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.setAttribute('aria-label', 'YouTubeで動画を開く');
+        link.innerHTML = `
+          <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="YouTube動画のサムネイル">
+          <span class="youtube-local-message">
+            <strong>▶ YouTubeで動画を開く</strong>
+            <small>クリックすると別のタブで再生します</small>
+          </span>`;
+        frame.replaceWith(link);
+      });
+    }
+
+    function updatePreview() {
+      const html = htmlInput.value.trim();
+      const css = `<style>${cssInput.value}</style>`;
+      preview.innerHTML = html ? css + html : '';
+      preview.querySelectorAll('a').forEach(link => {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+      });
+      processYouTubeEmbeds();
+    }
+
+    function toggleComment(checkbox) {
+      const taskItem = checkbox.closest('.task-item');
+      if (!taskItem) return;
+      taskItem.classList.toggle('completed', checkbox.checked);
+    }
+
+    function initializeFloatingTask() {
+      const panel = document.getElementById('floatingTask');
+      const handle = document.getElementById('taskDragHandle');
+      const minimizeButton = document.getElementById('taskMinimize');
+      let dragState = null;
+
+      minimizeButton.addEventListener('click', event => {
+        event.stopPropagation();
+        const minimized = panel.classList.toggle('minimized');
+        minimizeButton.textContent = minimized ? '+' : '−';
+        minimizeButton.title = minimized ? '元の大きさに戻す' : '最小化';
+        minimizeButton.setAttribute('aria-label', minimizeButton.title);
+        clampPanelToViewport();
+      });
+
+      handle.addEventListener('pointerdown', event => {
+        if (event.target.closest('button')) return;
+        const rect = panel.getBoundingClientRect();
+        dragState = { pointerId: event.pointerId, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top };
+        panel.style.left = `${rect.left}px`;
+        panel.style.top = `${rect.top}px`;
+        panel.style.right = 'auto';
+        panel.style.bottom = 'auto';
+        panel.classList.add('dragging');
+        handle.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      });
+
+      handle.addEventListener('pointermove', event => {
+        if (!dragState || dragState.pointerId !== event.pointerId) return;
+        const maxLeft = Math.max(0, window.innerWidth - panel.offsetWidth);
+        const maxTop = Math.max(0, window.innerHeight - panel.offsetHeight);
+        panel.style.left = `${Math.min(Math.max(0, event.clientX - dragState.offsetX), maxLeft)}px`;
+        panel.style.top = `${Math.min(Math.max(0, event.clientY - dragState.offsetY), maxTop)}px`;
+      });
+
+      const finishDrag = event => {
+        if (!dragState || dragState.pointerId !== event.pointerId) return;
+        panel.classList.remove('dragging');
+        dragState = null;
+      };
+      handle.addEventListener('pointerup', finishDrag);
+      handle.addEventListener('pointercancel', finishDrag);
+
+      handle.addEventListener('dblclick', event => {
+        if (event.target.closest('button')) return;
+        panel.style.left = 'auto';
+        panel.style.top = 'auto';
+        panel.style.right = '24px';
+        panel.style.bottom = '24px';
+      });
+
+      function clampPanelToViewport() {
+        const rect = panel.getBoundingClientRect();
+        if (panel.style.left && panel.style.left !== 'auto') {
+          panel.style.left = `${Math.min(Math.max(0, rect.left), Math.max(0, window.innerWidth - panel.offsetWidth))}px`;
+          panel.style.top = `${Math.min(Math.max(0, rect.top), Math.max(0, window.innerHeight - panel.offsetHeight))}px`;
+        }
+      }
+      window.addEventListener('resize', clampPanelToViewport);
+    }
+
+    htmlInput.addEventListener('input', () => { updatePreview(); updateLineNumbers(htmlInput, htmlLines); });
+    cssInput.addEventListener('input', () => { updatePreview(); updateLineNumbers(cssInput, cssLines); });
+    htmlInput.addEventListener('scroll', () => { htmlLines.scrollTop = htmlInput.scrollTop; });
+    cssInput.addEventListener('scroll', () => { cssLines.scrollTop = cssInput.scrollTop; });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updatePreview();
+      updateLineNumbers(htmlInput, htmlLines);
+      updateLineNumbers(cssInput, cssLines);
+      updateExampleLineNumbers(document.querySelector('#htmlExample pre'), document.getElementById('htmlExampleLines'));
+      updateExampleLineNumbers(document.querySelector('#cssExample pre'), document.getElementById('cssExampleLines'));
+      initializeFloatingTask();
+    });
+  </script>
 </body>
 </html>
