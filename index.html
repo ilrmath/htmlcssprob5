@@ -421,10 +421,54 @@
     }
 
     .task-item.completed {
-      border-color: var(--neon-yellow);
-      background: linear-gradient(135deg, #fff 0%, #fbffd7 100%);
+      border-color: #ff8a00;
+      background: linear-gradient(135deg, #fff176 0%, #ffd54f 58%, #ffb300 100%);
+      box-shadow: 0 0 0 3px rgba(255, 138, 0, 0.22), 0 6px 16px rgba(255, 138, 0, 0.2);
     }
+
+    .task-item.completed input[type="checkbox"] { accent-color: #ff8a00; }
+
+    .task-item.completed .comment {
+      border-left-color: #ff8a00;
+      background: #fff8e1;
+      color: #5d3300;
+    }
+
     .task-item.completed .comment { display: block; }
+
+    .quiz-next {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      border: 2px solid #65cfa3;
+      border-radius: 12px;
+      color: var(--green-deep);
+      background: var(--green-soft);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .quiz-next.show { display: block; animation: quizPop 0.35s ease; }
+
+    .quiz-next a {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 9px 16px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--green);
+      text-decoration: none;
+      box-shadow: 0 3px 0 var(--green-dark);
+    }
+
+    .quiz-next a:hover { filter: brightness(1.08); }
+    .quiz-next a:focus-visible { outline: 3px solid var(--neon-yellow); outline-offset: 3px; }
+
+    @keyframes quizPop {
+      from { transform: scale(0.94); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
 
     /* ローカルファイルでYouTubeがエラー153になる場合の代替表示 */
     .youtube-local-link {
@@ -681,7 +725,7 @@ section {
     <div class="task-body">
       <p class="task-intro">赤字のとおりに入力・変更します。上から順に進めます。</p>
 
-      <label class="task-item">
+      <label class="task-item" data-task="youtubeId">
         <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>① HTMLエリアの <strong>5)</strong> にある <strong>〇〇</strong> を、<br><code>CKIPz9QOBSA</code><br>（シー・ケー・アイ・ピー・ゼット・ナイン・キュー・オー・ビー・エス・エー）に書き換える</span></span>
         <span class="task-mini-list">
           <span class="task-line red"><span class="num">5)</span><span class="code-text">&lt;iframe width="300" height="200" src="https://www.youtube.com/embed/CKIPz9QOBSA" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;</span></span>
@@ -689,25 +733,25 @@ section {
         <span class="comment">動画が表示されました。<strong>O</strong> は数字の <strong>0</strong> ではなく、アルファベットの <strong>O（オー）</strong> です。embed/ の後ろにある文字列が動画IDです。</span>
       </label>
 
-      <label class="task-item">
+      <label class="task-item" data-task="introBreak">
         <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>② HTMLエリアの <strong>3)</strong> を変更</span></span>
         <span class="task-mini-list"><span class="task-line red"><span class="num">3)</span><span class="code-text">&lt;p&gt;たくさんの可愛い動物を紹介します。&lt;br&gt;</span></span></span>
         <span class="comment">&lt;br&gt;を入れた位置で、画面上の文章が改行されます。</span>
       </label>
 
-      <label class="task-item">
+      <label class="task-item" data-task="dogSection">
         <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>③ HTMLエリアの <strong>18)</strong> を変更</span></span>
         <span class="task-mini-list"><span class="task-line red"><span class="num">18)</span><span class="code-text">&lt;section id="dog"&gt;</span></span></span>
         <span class="comment">犬小屋のsectionに、dogという名前を付けます。</span>
       </label>
 
-      <label class="task-item">
+      <label class="task-item" data-task="catSection">
         <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>④ HTMLエリアの <strong>23)</strong> を変更</span></span>
         <span class="task-mini-list"><span class="task-line red"><span class="num">23)</span><span class="code-text">&lt;section id="cat"&gt;</span></span></span>
         <span class="comment">ねこ小屋のsectionに、catという名前を付けます。</span>
       </label>
 
-      <label class="task-item">
+      <label class="task-item" data-task="h1Styles">
         <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>⑤ CSSエリアの <strong>2)〜4)</strong> を入力</span></span>
         <span class="task-mini-list">
           <span class="task-line red"><span class="num">2)</span><span class="code-text">color: blue;</span></span>
@@ -717,7 +761,7 @@ section {
         <span class="comment">大見出しの文字色・背景色・配置をまとめて指定します。</span>
       </label>
 
-      <label class="task-item">
+      <label class="task-item" data-task="headerStyles">
         <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>⑥ CSSエリアの <strong>8)〜10)</strong> を入力</span></span>
         <span class="task-mini-list">
           <span class="task-line red"><span class="num">8)</span><span class="code-text">border-style: solid;</span></span>
@@ -727,13 +771,13 @@ section {
         <span class="comment">headerに境界線を付け、内側と外側に空白を作ります。</span>
       </label>
 
-      <label class="task-item">
+      <label class="task-item" data-task="h2TextAlign">
         <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>⑦ CSSエリアの <strong>14)</strong> を入力</span></span>
         <span class="task-mini-list"><span class="task-line red"><span class="num">14)</span><span class="code-text">text-align: center;</span></span></span>
         <span class="comment">すべてのh2を中央寄せにします。</span>
       </label>
 
-      <label class="task-item">
+      <label class="task-item" data-task="dogCatColors">
         <span class="task-item-main"><input type="checkbox" onchange="toggleComment(this)"><span>⑧ CSSエリアの <strong>25)</strong> と <strong>29)</strong> を入力</span></span>
         <span class="task-mini-list">
           <span class="task-line red"><span class="num">25)</span><span class="code-text">color: red;</span></span>
@@ -741,6 +785,12 @@ section {
         </span>
         <span class="comment">#dogは犬小屋だけ、#catはねこ小屋だけに適用されます。</span>
       </label>
+
+      <div class="quiz-next" id="quizNext">
+        🎉 全課題が完了しました。確認テストに進みましょう。<br>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfRUc466P4womdRl15qFm3h9XtKe2LLFlzeQkKlFMS1PyYuQA/viewform?usp=publish-editor"
+          target="_blank" rel="noopener noreferrer">test5へ進む →</a>
+      </div>
     </div>
   </aside>
 
@@ -759,6 +809,7 @@ section {
       inputArea.value = examplePre.textContent;
       updateLineNumbers(inputArea, lineBox);
       updatePreview();
+      updateTasks();
       inputArea.classList.add('flash');
       setTimeout(() => inputArea.classList.remove('flash'), 450);
       setTimeout(() => { checkbox.checked = false; }, 120);
@@ -852,10 +903,54 @@ section {
       processYouTubeEmbeds();
     }
 
+    function normalized(value) {
+      return value.replace(/\s+/g, ' ').trim().toLowerCase();
+    }
+
+    function getTaskState() {
+      const html = htmlInput.value;
+      const css = normalized(cssInput.value);
+
+      return {
+        youtubeId: /youtube\.com\/embed\/CKIPz9QOBSA/.test(html),
+        introBreak: /たくさんの可愛い動物を紹介します。\s*<br\s*\/?>/i.test(html),
+        dogSection: /<section\b[^>]*\bid\s*=\s*["']dog["'][^>]*>\s*<h2\b[^>]*>\s*犬小屋\s*<\/h2>/i.test(html),
+        catSection: /<section\b[^>]*\bid\s*=\s*["']cat["'][^>]*>\s*<h2\b[^>]*>\s*ねこ小屋\s*<\/h2>/i.test(html),
+        h1Styles: /h1\s*\{[^}]*color\s*:\s*blue\s*;?[^}]*background-color\s*:\s*yellow\s*;?[^}]*text-align\s*:\s*center\s*;?[^}]*\}/.test(css),
+        headerStyles: /header\s*\{[^}]*border-style\s*:\s*solid\s*;?[^}]*padding\s*:\s*10px\s*;?[^}]*margin\s*:\s*10px\s*;?[^}]*\}/.test(css),
+        h2TextAlign: /h2\s*\{[^}]*text-align\s*:\s*center\s*;?[^}]*\}/.test(css),
+        dogCatColors: /#dog\s*\{[^}]*color\s*:\s*red\s*;?[^}]*\}/.test(css)
+          && /#cat\s*\{[^}]*color\s*:\s*blue\s*;?[^}]*\}/.test(css)
+      };
+    }
+
+    function updateTasks() {
+      const state = getTaskState();
+      const tasks = [...document.querySelectorAll('.task-item[data-task]')];
+
+      tasks.forEach(taskItem => {
+        const complete = Boolean(state[taskItem.dataset.task]);
+        const checkbox = taskItem.querySelector('input[type="checkbox"]');
+        if (checkbox) checkbox.checked = complete;
+        taskItem.classList.toggle('completed', complete);
+      });
+
+      document.getElementById('quizNext').classList.toggle(
+        'show',
+        tasks.length > 0 && tasks.every(task => state[task.dataset.task])
+      );
+    }
+
     function toggleComment(checkbox) {
+      updateTasks();
       const taskItem = checkbox.closest('.task-item');
       if (!taskItem) return;
-      taskItem.classList.toggle('completed', checkbox.checked);
+      checkbox.checked = taskItem.classList.contains('completed');
+      const tasks = [...document.querySelectorAll('.task-item input[type="checkbox"]')];
+      document.getElementById('quizNext').classList.toggle(
+        'show',
+        tasks.length > 0 && tasks.every(task => task.checked)
+      );
     }
 
     function initializeFloatingTask() {
@@ -920,8 +1015,8 @@ section {
       window.addEventListener('resize', clampPanelToViewport);
     }
 
-    htmlInput.addEventListener('input', () => { updatePreview(); updateLineNumbers(htmlInput, htmlLines); });
-    cssInput.addEventListener('input', () => { updatePreview(); updateLineNumbers(cssInput, cssLines); });
+    htmlInput.addEventListener('input', () => { updatePreview(); updateTasks(); updateLineNumbers(htmlInput, htmlLines); });
+    cssInput.addEventListener('input', () => { updatePreview(); updateTasks(); updateLineNumbers(cssInput, cssLines); });
     htmlInput.addEventListener('scroll', () => { htmlLines.scrollTop = htmlInput.scrollTop; });
     cssInput.addEventListener('scroll', () => { cssLines.scrollTop = cssInput.scrollTop; });
 
@@ -931,6 +1026,7 @@ section {
       updateLineNumbers(cssInput, cssLines);
       updateExampleLineNumbers(document.querySelector('#htmlExample pre'), document.getElementById('htmlExampleLines'));
       updateExampleLineNumbers(document.querySelector('#cssExample pre'), document.getElementById('cssExampleLines'));
+      updateTasks();
       initializeFloatingTask();
     });
   </script>
